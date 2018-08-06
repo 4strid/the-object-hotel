@@ -7,14 +7,13 @@ When we dive into what it means for the value of a variable to be a reference, w
 
 ## Let's talk about variables
 
-Variables are the simplest form of data storage available to us as programmers. A variable is like a container: you can put something in it, and then reference it later.
+Variables are the simplest form of data storage available to us as JavaScript programmers. A variable is like a container: you can put something in it, and then reference it later.
 
 ```javascript
 var awesome = 1337;
 ```
 
-"Putting something in" the variable is a well-defined process: the right-hand-side (RHS) of the assignment expression is evaluated, and the resulting single value is copied into the variable. This is always the process, regardless of what the RHS may consist of. Any expression, no matter
-how complex, will always evaluate to one single value, which is all that a variable can hold.
+"Putting something in" the variable is a well-defined process: the right-hand-side (RHS) of the assignment expression is evaluated, and the resulting single value is copied into the variable. This is always the process, regardless of what the RHS may consist of. Any expression, no matter how complex, no matter what type, will always evaluate to one single value, which is all that a variable can hold.
 
 It's also worth noting that assignment is the *only* way you can change the value of a variable, that is to say, they can only be modified directly. Conversely, changing the value of one variable will never affect the value of another variable. It's actually impossible to create a reference to a variable in JavaScript, since all we can do is copy values on assignment. Gotta use a lower level language like C to get that kind of access to memory.
 
@@ -28,7 +27,7 @@ b = 'goodbye'; // a is not affected, since b only contained a copy of its value
 #### Creating a reference (C)
 ```c
 int  a = 0;   // variable a
-int *p = &a;  // the memory address of a, that is, a real reference to a
+int *p = &a;  // & grabs the memory address, that is, a real reference to a
     *p = 1;   // we remotely changed a's value by directly accessing its memory address!
 ```
 
@@ -36,7 +35,7 @@ C is pretty arcane, but a fun language to learn if you're interested at all in h
 
 ## What does `var` do anyway?
 
-Time to get a little technical. Consider the keyword `var`: ever wonder what it actually does? Sure, we know it creates a local variable in the current function scope, but that's an outcome not an action. Essentially, `var` allocates a slot of memory big enough to hold exactly one variable. Since JavaScript isn't typed, it's not exactly straightforward (a number might take up a different amount of space than a string), and reassignment may cause it to start all over again, but what's consistent here is that we're saying, "I have this single variable, with its single value and I need some space to store it."
+Time to get a little technical. Consider the keyword `var`: ever wonder what it actually does? Sure, we know it creates a local variable in the current function scope, but that's an outcome not an action. Essentially, `var` allocates a slot of memory big enough to hold exactly one variable. Since JavaScript isn't typed, it's not exactly straightforward (a number might take up a different amount of space than a string), and reassignment may cause it to start all over again, but what is consistent is that we're saying, "I have this single variable, with its single value and I need some space to store it."
 
 The premise that I've insisted on so adamantly, that a variable only ever holds one value, appears to be completely contradicted when we throw objects into the mix. An object might contain any number of values as its properties, and we can definitely assign objects to variables.
 
@@ -56,6 +55,8 @@ When an object is created, it checks in to what I like to call The Object Hotel.
 
 What we store in the variable `myObj` is its room number.
 
+Every time we go to access it, whether to modify it or to get one of its properties, JavaScript handles the details of the operation for us, looking it up by room number, and setting or accessing its property appropriately. Since it's all handled automatically, it may seem like what we've stored in the variable is the object itself, but actually, it's just a reference.
+
 ## Beautiful consistency
 
 With this model of objects in mind, all of the "strangeness" of objects and variables completely evaporates. Let's take a look at some examples.
@@ -69,20 +70,26 @@ a === b; // false
 
 Though the two objects are identical, `===` compares the two variable's *values*, and since they are distinct objects, they'll have different room numbers, and hence different values. The only time `===` will return true for two objects is if they have the same value: that is, they refer to the exact same object.
 
+Note: `==` also compares values, so it's not your magic bullet here either (...nor is it probably *ever* the right answer.)
+
 ```javascript
 var a = {};
 var b = a;
+
+a === b; // true
 
 b.what = 'huh?';
 
 a.what; // 'huh?'
 ```
 
-We copied `a`'s room number into `b` when we did the assignment. So when we dump stuff into `b`, assigning a new property, it ends up in the same room as the one referred to by a. When we look into `a`, it's no surprise that we see what we dumped in there via `b`, as they refer to the same physical location.
+We copied `a`'s room number into `b` when we did the assignment. So when we dump stuff into `b`, assigning a new property, it ends up in the same room as the one referred to by `a`. When we look into `a`, it's no surprise that we see what we dumped in there via `b`, as they refer to the same physical location.
+
+This may seem to contradict what I said earlier: that modifying the value of one variable will never affect another, but let's be clear here: the *values* of these variables are the room numbers, and we're leaving them quite alone. Modifying the properties of an object changes the contents of its hotel room, but assignment remains the only way to change a variable's value. (Ok there's `++` and `--` but those perform assignment as part of their operation so whatever.)
 
 ## Let's talk about function arguments
 
-We're getting close to our answer now, but for completeness' sake, let's discuss what happens when we pass arguments to a function. Function parameters are basically variables: they contain a value, and when we pass in an argument, the value of the argument is copied into the parameter. Sounds an awful lot like regular assignment to me.
+We're getting close to our answer now, but for completeness' sake, let's discuss what happens when we pass arguments to a function. Function parameters are basically variables: they contain a value, and when we pass in an argument, the value of the argument is copied into the parameter.
 
 ```javascript
 var a = 0;
@@ -92,7 +99,7 @@ function f (param1, param2) {
     // ...
 }
 
-f(a, b); // param1 gets mapped to a, param2 gets mapped to b
+f(a, b); // param1 gets assigned `a`, param2 gets assigned `b`
 ```
 
 This is almost identical to saying something along the lines of
@@ -120,6 +127,7 @@ function reassign (obj) {
 }
 
 reassign(myObj);
+// doesn't do anything
 ```
 
 If objects were actually passed by reference, reassigning the `obj` parameter would cause the `myObj` variable to have changed. But it's not. Consistent with numbers, strings, and everything else, passing an object simply copies the value. What's different about objects, is that the value is a reference, and so inside the function, we are referring to the same object, the same room number in The Object Hotel.
@@ -136,29 +144,41 @@ modify(myObj);
 myObj.key; // it's 'new value' now
 ```
 
-As such, we are able to modify objects passed into a function, in exactly the same way that we can when we assign a variable to an existing object. Nothing mysterious happens when we pass an object as an argument, it's just simple assignment.
+With the reference in hand, we are able to modify objects passed into a function, in exactly the same way that we did in the `a = b` example a little earlier. But nothing mysterious happens when we pass an object as an argument, it's still just simple assignment. For emphasis: passing any type of value as an argument to a function behaves exactly the same way.
 
 #### What if I don't want my object to change?
 
-To "safely" pass an object, we'll have to make a copy of it before passing it into the function (alternatively, we can make a copy of it inside the function). Once upon a time, to copy an object you had to loop over all of its properties and copy them manually, but in 2018 we have some pretty nifty ways to copy an object.
+To "safely" manipulate an object that was passed in as an argument, we'll need to make a copy of it before we add or modify properties. Once upon a time, to copy an object you had to loop over all of its properties and copy them manually, but in 2018 we have some pretty nifty ways to copy an object.
 
  One way is to use the ES6 function `Object.assign`. This takes a target object, and then copies all the properties of the rest of the arguments to the target. Very useful for mashing objects together, and for our purposes, makes copying an object a simple one-liner. We call it with an empty object, and the object we want to copy.
 
 ```javascript
-var myObj = { key: 'value' };
-var copy = Object.assign({}, myObj);
+function augmentObj (obj) {
+    var copy = Object.assign({}, obj);
+    copy.pure = false;
+    copy.augmented = true;
+    copy.newProp = 'new value';
+    return copy
+}
+
+var myObj = { pure: true };
+
+var augmented = augmentObj(myObj);
+
+myObj.pure; // still true
+augmented.augmented; // true
 ```
 
-Now we can pass the copied object to any function, and `myObj` will remain safe and sound.
+For arrays, you can make a copy by calling the array prototype method slice() with no arguments: `var copy = myArray.slice()`
 
 ## Arrays and Functions are objects too
 
-Everything about the variables being stored as references applies to arrays and functions as well. If you pass an array to a function, it's liable to be modified, and have those modifications reflect on the outside. Same with functions, though we usually leave those pretty much alone.
+Everything about the variables being stored as references applies to arrays and functions as well. If you pass an array to a function or assign it to another variable, it's liable to be modified and have those modifications reflect on the original. Same with functions, though we usually leave those pretty much alone.
 
 ## Ok but a hotel, seriously?
 
-Actually, minus the stereotypical French concierge, this is basically how it works under the hood. If we take our metaphor and replace the word "hotel" with "heap" and instead of room numbers, call them "memory addresses" then it becomes a decent description of how the memory allocation for objects works. But it's more fun and memorable when we personify the objects and give them a nice 5-star hotel to relax in, I think.
+Actually, minus the stereotypical French concierge, this is basically how it works under the hood. If we take our metaphor and replace the word "hotel" with "heap" and instead of room numbers, call them "memory addresses" then it becomes a decent description of how the memory allocation for objects works. But it's more fun and memorable when we personify the objects and give them a nice 5-star hotel to relax in, I think. But now you have the "real life computer" words too if you'd prefer to use them.
 
-So that's that: objects are special in that they are references, but variables themselves behave in a simple and consistent way, always copying the right hand side into the left hand side. I think drawing the distinction in the right place is important, so that our mental models can be as simple and consistent as possible.
+In summary: objects are special in that they are stored as references, but variables themselves behave in a simple and consistent way, always copying the right hand side of an assignment into the left hand side. Argument passing behaves consistently with variable assignment. I think drawing the distinction in the right place is important, so that our mental models can be as simple and consistent as possible, and because it can completely eliminate potential sources for confusion.
 
 #### Thanks for reading! Since this is just a GitHub repo, you can open an issue to "leave a comment". (Or make a pull request if I've gotten something *horribly wrong*)
