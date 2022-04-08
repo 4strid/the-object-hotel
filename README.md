@@ -27,7 +27,7 @@ b = 'goodbye'; // a is not affected, since b only contained a copy of its value
 #### Creating a reference (C)
 ```c
 int  a = 0;   // variable a
-int *p = &a;  // & grabs the memory address, that is, a real reference to a
+int *p = &a;  // & grabs the memory address, that is, a real reference to "a"
     *p = 1;   // we remotely changed a's value by directly accessing its memory address!
 ```
 
@@ -51,7 +51,7 @@ Something's got to give: either it's time to stop reading this blog post, as the
 
 ## The Object Hotel
 
-When an object is created, it checks in to what I like to call The Object Hotel. It goes up to the front desk and asks for a room. The concierge says "Oui monsieur, your room number is 0x12bcedfa." The object heads up the elevator, unpacks all of its stuff, kicks off its shoes, and hangs out in its room until it is forgotten about (just like in the Pixar movie [Coco](https://www.youtube.com/watch?v=RVNE60SFPpw))[.](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_Management#Garbage_collection)
+When an object is created, it checks in to what I like to call The Object Hotel. It goes up to the front desk and asks for a room. The concierge says "Oui monsieur, your room number is 0x12bcedfa." The object heads up the elevator, unpacks all of its stuff, kicks off its shoes, and hangs out in its room until it is forgotten about (just like in the Pixar movie [Coco](https://www.youtube.com/watch?v=4xfaIjEGsiA))[.](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_Management#Garbage_collection)
 
 What we store in the variable `myObj` is its room number.
 
